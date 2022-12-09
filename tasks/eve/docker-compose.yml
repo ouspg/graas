@@ -1,0 +1,23 @@
+services:
+  alice:
+    # image: ${image_name:?errx}:latest
+    build: ./alice
+    hostname: alice
+    networks:
+      - conversation
+
+  bob:
+    # image: ${image_name:?err}:latest
+    # For local debugging only
+    build: 
+      context: ./
+      dockerfile: ./bob/Dockerfile
+    hostname: bob
+    networks:
+      - conversation
+
+
+
+
+networks:
+  conversation:
