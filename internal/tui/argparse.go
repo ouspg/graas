@@ -3,7 +3,7 @@ package tui
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/ouspg/grass/internal"
+	"github.com/ouspg/graas/internal"
 	"github.com/urfave/cli/v2"
 	"go.uber.org/zap"
 	"log"

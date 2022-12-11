@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/ouspg/grass/internal/tui"
+	"github.com/ouspg/graas/internal/tui"
 )
 
 func main() {

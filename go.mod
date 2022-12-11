@@ -1,12 +1,12 @@
-module github.com/ouspg/grass
+module github.com/ouspg/graas
 
 go 1.19
 
 require (
 	github.com/BurntSushi/toml v1.2.1
 	github.com/gomarkdown/markdown v0.0.0-20221013030248-663e2500819c
-	github.com/urfave/cli/v2 v2.23.2
-	go.uber.org/zap v1.23.0
+	github.com/urfave/cli/v2 v2.23.7
+	go.uber.org/zap v1.24.0
 )
 
 require (
