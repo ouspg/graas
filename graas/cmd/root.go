@@ -4,6 +4,10 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"encoding/json"
+	"go.uber.org/zap"
+	"os"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"os"
