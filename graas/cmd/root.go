@@ -1,39 +1,40 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
-import (
-	"encoding/json"
-	"go.uber.org/zap"
-	"os"
+/*
+Copyright © 2023 Niklas Saari niklas.saari@tutanota.com
+*/
 
+import (
+	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"os"
+	"strings"
 )
+
+var defaultConfig = "course"
+var defaultConfigPath = "."
+var envPrefix = "GITHUB"
+var logLevel ZapLogLevel
+var enableJSON bool
+var Logger *zap.Logger
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "graas",
 	Short: "Grading Assistant",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Long:  `Assistant for generating and reviewing student tasks.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		// You can bind cobra and viper in a few locations, but PersistencePreRunE on the root command works well
 		return initConfig(cmd)
 	},
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -42,32 +43,94 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-	var (
-		cfgFileName = "config"
-	)
-
-	rootCmd.PersistentFlags().StringVar(&cfgFileName, "config", "", "Course config file (default is config.toml in current directory")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// Global flags
+	cobra.OnInitialize(initLogger)
+	rootCmd.PersistentFlags().StringP("config", "c", "", "Course config file (default is course.toml in current directory")
+	rootCmd.PersistentFlags().StringP("repository", "r", "", "Override GITHUB_REPOSITORY environment variable (target student)")
+	rootCmd.MarkFlagRequired("repository")
+	rootCmd.PersistentFlags().String("token", "", "Override GITHUB_TOKEN environment variable for GitHub authentication purposes")
+	rootCmd.PersistentFlags().String("ref-type", "", "Override GITHUB_REF_TYPE environment variable. The type of ref that triggered the GitHub Action workflow run.")
+	rootCmd.PersistentFlags().String("ref", "", "Override GITHUB_REF environment variable. The fully-formed ref of the branch or tag that triggered the GitHub Actions workflow run.")
+	rootCmd.PersistentFlags().VarP(&logLevel, "log", "l", "Set a log level. Available levels: debug, info, warn, error, dpanic, panic, fatal")
+	rootCmd.PersistentFlags().BoolVarP(&enableJSON, "json", "j", false, "Enable JSON output")
+	// Local flags
 }
 
-func initConfig {
-	v := viper.New()
-	v.SetConfigFile()
+// ZapLogLevel overrides zapcore.Level package to support cobra variable flag directly
+type ZapLogLevel struct {
+	zapcore.Level
+}
 
-	// Attempt to read the config file, gracefully ignoring errors
-	// caused by a config file not being found. Return an error
-	// if we cannot parse the config file.
-	if err := v.ReadInConfig(); err != nil {
-		// It's okay if there isn't a config file
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return err
-		}
+func (e *ZapLogLevel) Type() string {
+	return "ZapLogLevel"
+}
+
+func initLogger() {
+	// Init logger configuration for Zap
+	var cfg zap.Config
+	atom := zap.NewAtomicLevel()
+	atom.SetLevel(zapcore.LevelOf(logLevel))
+	cfg.Level = atom
+	if enableJSON {
+		cfg.Encoding = "json"
+	} else {
+		cfg.Encoding = "console"
 	}
+	if cfg.Level.Level() == zap.DebugLevel {
+		cfg.EncoderConfig = zap.NewDevelopmentEncoderConfig()
+		cfg.Development = true
+		cfg.DisableCaller = false
+	} else {
+		cfg.EncoderConfig = zap.NewProductionEncoderConfig()
+		cfg.EncoderConfig.TimeKey = "" // disable timestamps
+		cfg.Development = false
+		cfg.DisableCaller = true
+	}
+	cfg.OutputPaths = []string{"stdout", "/tmp/logs"}
+	cfg.ErrorOutputPaths = []string{"stderr"}
+	Logger = zap.Must(cfg.Build())
+	defer Logger.Sync()
+	Logger.Debug("Logger properly configured",
+		zap.String("encoding", cfg.Encoding),
+		zap.Bool("production", !cfg.Development),
+	)
+}
+
+func initConfig(cmd *cobra.Command) error {
+	var replaceHyphenWithCamelCase = true
+
+	v := viper.New()
+	v.SetConfigName(defaultConfig)
+	v.AddConfigPath(defaultConfigPath)
+	v.SetEnvPrefix(envPrefix)
+	v.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+	v.AutomaticEnv()
+
+	if err := v.ReadInConfig(); err != nil {
+		Logger.Fatal("Course configuration file not found.",
+			zap.String("configPath", v.Fi()),
+		)
+		//if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+		//	return err
+		//}
+	}
+	cmd.Root().Flags().Lookup("")
+	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+		// Determine the naming convention of the flags when represented in the config file
+		configKey := f.Name
+		fmt.Println(f.Name)
+		// If using camelCase in the config file, replace hyphens with a camelCased string.
+		// Since viper does case-insensitive comparisons, we don't need to bother fixing the case, and only need to remove the hyphens.
+		if replaceHyphenWithCamelCase {
+			configKey = strings.ReplaceAll(f.Name, "-", "")
+		}
+		//fmt.Println(v.Get("title"))
+		// Apply the viper config value to the flag when the flag is not set and viper has a value
+		if !f.Changed && v.IsSet(configKey) {
+			val := v.Get(configKey)
+			cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+		}
+	})
+	return nil
 
 }
