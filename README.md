@@ -33,7 +33,7 @@ For that purpose, we need to self-host our GitHub Action runners.
 
 ## Current flag types, and idea of their use
   * FlagAsTextFile
-  * FlagAsBinary
+  * FlagAsBinary (executable)
   * FlagAsEnvVariable
   * FlagAsRNGSeed
 
@@ -64,7 +64,7 @@ From the security perspective, GitHub Actions runner should be only able to run 
 
 ## Code quality
 
-Software must be written in Go, because all important container related has been build with Go, and we don't want to increase maintance effort with third-party wrappers.
+Software must be written in Go, because all important container related has been build with Go, and we don't want to increase maintenance effort with third-party wrappers.
 GitHub CLI and Graphql engine is also written in Go, which provides as the best way to access GitHub's API, when it is required.
 
   * Ideal goal is to make future-proof (select stable, well adapted, popular dependencies), low maintenance code
@@ -89,8 +89,14 @@ Example https://github.com/carolynvs/stingoftheviper
 
 * GitHub API access https://github.com/cli/go-gh (Might not needed much)
 * Building Containers https://github.com/containers/buildah
- * No root required, we want that
+  * No root required, we want that
 * Possibly also some other build tool should be considered for general binaries. For every task, there should be some common ground to define building of the binary and extract the output
   * Maybe Task https://github.com/go-task/task
   * Most likely for Go, C and Rust binaries at first
   * Also PDF, .docx generation is possible in the future, very versatile is required
+
+ ## Getting started with the code
+
+ 1. Install Go
+ 2. `go build` will install required dependencies
+ 3. `go run main.go` will run the Cobra root command and it will print help text
