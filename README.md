@@ -4,8 +4,9 @@
 
 ## Purpose
 
-This software attempts to build CTF-like tasks for students and automatically review them.
-After reviewing current possilities, using GitHub Classroom as platform seems to be the most fit for our usecase, and it grants the lowest maintenance and is likely future-proof.
+This software attempts to build CTF-like tasks for students, and automatically reviews and grades them.
+After reviewing current possilities, using GitHub Classroom as platform seems to be the most fit for our usecase.
+It also grants the lowest maintenance and is likely future-proof.
 Because of that, the software will be designed, but not be totally limited, for GitHub ecosystem.
 
 Current design idea includes:
@@ -24,7 +25,7 @@ Current design idea includes:
 ### Things to considerate
 
 On GitHub's free tier, there is not much CI time for private jobs (student's repositories are private).
-Also, we might need custom GitHub Actions runner to limit permissions that students can't acquire private keys or secrects which are used to generate tasks (and flags).
+Also, we might need custom GitHub Actions runner to limit permissions that students can't acquire private keys or secrets which are used to generate tasks (and flags).
 For that purpose, we need to self-host our GitHub Action runners.
 
 ## Current flag types how this software should generate them
@@ -34,9 +35,18 @@ For that purpose, we need to self-host our GitHub Action runners.
   * FlagAsRNGSeed
 
 ```mermaid
-graph TD;
-A[Graas generates flag]-->B[Task uses flag];
-B-->C[Graas ships the whole task binary];
+stateDiagram-v2
+state "Task generation initialised" as s2
+state "Flag created" as s3
+state "Task build process initiated" as s4
+state "Flag injected or used in the task" as s5
+state "Task published" as s6
+[*] --> s2
+s2 --> s3
+s3 --> s4
+s4 --> s5
+s5 --> s6
+s6 --> [*]
 ```
 
 
