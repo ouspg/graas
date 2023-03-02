@@ -27,16 +27,16 @@ Also, we might need custom GitHub Actions runner to limit permissions that stude
 For that purpose, we need to self-host our GitHub Action runners.
 
 ## Current flag types how this software should generate them
-	* FlagAsTextFile
-	* FlagAsBinary
-	* FlagAsEnvVariable
-    * FlagAsRNGSeed
+  * FlagAsTextFile
+  * FlagAsBinary
+  * FlagAsEnvVariable
+  * FlagAsRNGSeed
 
-    ```mermaid
-    graph TD;
-    A[Graas generates flag]-->B[Task uses flag];
-    B-->C[Graas ships the whole task binary];
-    ```
+```mermaid
+graph TD;
+A[Graas generates flag]-->B[Task uses flag];
+B-->C[Graas ships the whole task binary];
+```
 
 
 ## Code quality
