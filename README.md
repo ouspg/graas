@@ -31,7 +31,7 @@ On GitHub's free tier, there is not much CI time for private jobs (student's rep
 Also, we might need custom GitHub Actions runner to limit permissions that students can't acquire private keys or secrets which are used to generate tasks (and flags).
 For that purpose, we need to self-host our GitHub Action runners.
 
-## Current flag types how this software should generate them
+## Current flag types, and idea of their use
   * FlagAsTextFile
   * FlagAsBinary
   * FlagAsEnvVariable
@@ -54,14 +54,18 @@ s6 --> [*]
 
 There should be a specific format how tasks can be configured.
 Flag type and output files should be defined.
-There should be uniform way to tell, how this task will be build.
-  * It could be oldSchool Makefil
+There should be uniform way to tell, how every task will be build.
+  * It could be oldSchool Makefile (own Makefile for every task? Could take too much effort)
   * Some other build system
+    * https://github.com/go-task/task
   * Just bash command? (dangers ahead)
 
 From the security perspective, GitHub Actions runner should be only able to run this specific binary, but then this specific binary can give build commands.
 
 ## Code quality
+
+Software must be written in Go, because all important container related has been build with Go, and we don't want to increase maintance effort with third-party wrappers.
+GitHub CLI and Graphql engine is also written in Go, which provides as the best way to access GitHub's API, when it is required.
 
   * Ideal goal is to make future-proof (select stable, well adapted, popular dependencies), low maintenance code
   * Task generation should be based on strong cryptography
