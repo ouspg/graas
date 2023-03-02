@@ -2,6 +2,9 @@
 
 # Grade assistant (Graas)
 
+> **Warning**
+> This very work in progress..
+
 ## Purpose
 
 This software attempts to build CTF-like tasks for students, and automatically reviews and grades them.
@@ -49,6 +52,14 @@ s5 --> s6
 s6 --> [*]
 ```
 
+There should be a specific format how tasks can be configured.
+Flag type and output files should be defined.
+There should be uniform way to tell, how this task will be build.
+  * It could be oldSchool Makefil
+  * Some other build system
+  * Just bash command? (dangers ahead)
+
+From the security perspective, GitHub Actions runner should be only able to run this specific binary, but then this specific binary can give build commands.
 
 ## Code quality
 
