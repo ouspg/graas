@@ -16,7 +16,8 @@ title = "Configuration file for exercises in the course Introduction to Cybersec
 
 
 # Absolute path for the root location for the tasks (required for building the tasks)
-tasksDir = "/home/nicce/teaching/gradeassistant/tasks"
+# TODO should be set relatively and option also with command line param
+tasksDir = "/Users/nicce/teaching/graas/tasks"
 
 # Task 1
 # head -c 32 /dev/random | xxd -ps

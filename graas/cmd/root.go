@@ -4,6 +4,7 @@ package cmd
 Copyright © 2023 Niklas Saari niklas.saari@tutanota.com
 */
 
+
 import (
 	"fmt"
 	"github.com/spf13/cobra"
@@ -14,9 +15,14 @@ import (
 	"os"
 	"strings"
 )
+// Note that variables are defined package wide!
 
 var defaultConfig = "course"
 var defaultConfigPath = "."
+
+// Loaded viper data
+// Define here that can be accessed after parsing command-line parameters
+var v *viper.Viper
 var envPrefix = "GITHUB"
 var logLevel ZapLogLevel
 var enableJSON bool
@@ -42,15 +48,24 @@ func Execute() {
 	}
 }
 
+// Map GitHub evironment variables to command names to keep access and modifiying easier with Cobra
+var (
+    GitRepository = "repository" // "GITHUB_REPOSITORY"
+    GitToken = "token" // "GITHUB_TOKEN"
+    GitRef = "ref" // "GITHUB_REF"
+    GitRefType = "ref-type" // "GITHUB_REF_TYPE"
+
+)
+
 func init() {
 	// Global flags
 	cobra.OnInitialize(initLogger)
 	rootCmd.PersistentFlags().StringP("config", "c", "", "Course config file (default is course.toml in current directory")
-	rootCmd.PersistentFlags().StringP("repository", "r", "", "Override GITHUB_REPOSITORY environment variable (target student)")
-	rootCmd.MarkFlagRequired("repository")
-	rootCmd.PersistentFlags().String("token", "", "Override GITHUB_TOKEN environment variable for GitHub authentication purposes")
-	rootCmd.PersistentFlags().String("ref-type", "", "Override GITHUB_REF_TYPE environment variable. The type of ref that triggered the GitHub Action workflow run.")
-	rootCmd.PersistentFlags().String("ref", "", "Override GITHUB_REF environment variable. The fully-formed ref of the branch or tag that triggered the GitHub Actions workflow run.")
+	rootCmd.PersistentFlags().StringP(GitRepository, "r", "", "Override GITHUB_REPOSITORY environment variable (target student)")
+	rootCmd.MarkFlagRequired(GitRepository)
+	rootCmd.PersistentFlags().String(GitToken, "", "Override GITHUB_TOKEN environment variable for GitHub authentication purposes")
+	rootCmd.PersistentFlags().String(GitRefType, "", "Override GITHUB_REF_TYPE environment variable. The type of ref that triggered the GitHub Action workflow run.")
+	rootCmd.PersistentFlags().String(GitRef, "", "Override GITHUB_REF environment variable. The fully-formed ref of the branch or tag that triggered the GitHub Actions workflow run.")
 	rootCmd.PersistentFlags().VarP(&logLevel, "log", "l", "Set a log level. Available levels: debug, info, warn, error, dpanic, panic, fatal")
 	rootCmd.PersistentFlags().BoolVarP(&enableJSON, "json", "j", false, "Enable JSON output")
 	// Local flags
@@ -98,27 +113,22 @@ func initLogger() {
 
 func initConfig(cmd *cobra.Command) error {
 	var replaceHyphenWithCamelCase = true
-
-	v := viper.New()
+	v = viper.New()
 	v.SetConfigName(defaultConfig)
 	v.AddConfigPath(defaultConfigPath)
 	v.SetEnvPrefix(envPrefix)
 	v.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	v.AutomaticEnv()
-
 	if err := v.ReadInConfig(); err != nil {
-		Logger.Fatal("Course configuration file not found.",
-			zap.String("configPath", v.Fi()),
+		Logger.Debug("Error when reading configuration file.",
+			zap.String("error", err.Error()),
 		)
-		//if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-		//	return err
-		//}
+		return err
 	}
 	cmd.Root().Flags().Lookup("")
 	cmd.Flags().VisitAll(func(f *pflag.Flag) {
 		// Determine the naming convention of the flags when represented in the config file
 		configKey := f.Name
-		fmt.Println(f.Name)
 		// If using camelCase in the config file, replace hyphens with a camelCased string.
 		// Since viper does case-insensitive comparisons, we don't need to bother fixing the case, and only need to remove the hyphens.
 		if replaceHyphenWithCamelCase {
@@ -131,6 +141,5 @@ func initConfig(cmd *cobra.Command) error {
 			cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
 		}
 	})
-	return nil
-
+    return nil
 }
