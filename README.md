@@ -7,12 +7,11 @@
 
 ## Purpose
 
-This software attempts to build CTF-like tasks for students, and automatically reviews and grades them.
-After reviewing current possilities, using GitHub Classroom as platform seems to be the most fit for our usecase.
-It also grants the lowest maintenance and is likely future-proof.
+This software attempts to build CTF-like tasks with different solutions for students in away, that these solutions can be automatically reviewed.
+GitHub Classroom as platform seems to be the most fit for our usecase; it offers the lowest maintenance and is likely future-proof.
 Because of that, the software will be designed, but not be totally limited, for GitHub ecosystem.
 
-Current design idea includes:
+Current design ideas include:
 * Students create own repository for making assignments with GitHub Classroom
 * After trigger is made (e.g. specific tag is published), GitHub Actions is triggered, and with the help of **this** software, possible assigment related files will be generated as releases
   * Files will be either generated as releases under student's own repository, or as package into GitHub organisations' container registry
@@ -79,8 +78,19 @@ GitHub CLI and Graphql engine is also written in Go, which provides as the best 
 
 ## Current work
 
-Initial remake with cobra and viper has been made for long term support.
-Example https://github.com/carolynvs/stingoftheviper
+Initial remake with cobra and viper has been made.
+Example https://github.com/carolynvs/stingoftheviper or Cobra introduction tutorial on docs.
+
+Just basic skeleton with logging and some parameters has been implemented.
+Basic idea for flag generation.
+
+### Dependencies
+
+* [Cobra](https://github.com/spf13/cobra) for creating modern CLI applications
+* [Viper](https://github.com/spf13/viper/) for reading ENV variables and TOML/YAML files. For all other configuration. (Cobra already uses it when generating template code)
+  * Apparently v2 is on the way with breaking changes, but might take time to land
+  * [pflag]](https://github.com/spf13/pflag) for POSIX/GNU flags, Cobra dependency as well
+* [Zap](https://github.com/uber-go/zap) as advanced and fast logger
 
 
 
@@ -88,14 +98,33 @@ Example https://github.com/carolynvs/stingoftheviper
 ## Potential libraries for future development
 
 * GitHub API access https://github.com/cli/go-gh (Might not needed much)
-* Building Containers https://github.com/containers/buildah
-  * No root required, we want that
+* Building Containers https://github.com/containers/buildah or https://github.com/GoogleContainerTools/kaniko
+  * No root required, we want that. We should also look some cache optimisations to produce one-layer images. Buildah is likely better.
 * Possibly also some other build tool should be considered for general binaries. For every task, there should be some common ground to define building of the binary and extract the output
   * Maybe Task https://github.com/go-task/task
   * Most likely for Go, C and Rust binaries at first
   * Also PDF, .docx generation is possible in the future, very versatile is required
+* For parsing Markdown, seems reasonable: https://github.com/gomarkdown/markdown
 
- ## Getting started with the code
+ ## Getting started
+
+Continuation of the development requires understanding the following concepts at first:
+
+* GitHub Classroom and its [autograding features](https://docs.github.com/en/education/manage-coursework-with-github-classroom/teach-with-github-classroom/use-autograding)
+    * This software will be run as part of the autograder
+    * Check following samples
+        * https://github.com/CompSec-2021/autogradefeaturetesting-Nicceboy/tree/main
+        * https://github.com/CompSec-2021/AutoGrader
+
+* How GitHub Actions works. Classroom uses it, but it will be also used on publishing unique tasks for the students (releases & packages), maybe something else as well.
+  * This software depends on the Actions environment (environment variables, folder structure etc.)
+* How OCI containers work
+  * It is important to know how layers and everything work, so that we are not appending flag just as final layer which is easily extractable
+  * If we build containers for masses in self-hosted VM, we need to optimise cache-reuse
+  * Prefer multi-stage builds with one layer if Dockerfile (Containerfile) is used, squash in the end
+  * Compare with non-root alternatives [Buildah](https://github.com/containers/buildah) or [Kaniko](https://github.com/GoogleContainerTools/kaniko)
+
+ ### With code
 
  1. Install Go
  2. `go build` will install required dependencies

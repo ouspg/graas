@@ -1,7 +1,7 @@
 package cmd
 
 /*
-Copyright © 2023 Niklas Saari niklas.saari@tutanota.com
+Copyright © 2023 OUSPG ouspg@ouspg.org
 */
 
 
@@ -48,7 +48,9 @@ func Execute() {
 	}
 }
 
-// Map GitHub evironment variables to command names to keep access and modifiying easier with Cobra
+// Map GitHub evironment variables to command names to keep access and modifiying easier with Cobra/
+// Prefix is automatically removed from ENV variable (see var  envPrefix), suffix lowercased, and result compared to command argument names
+// as result, following command names will match ENV variables, comparison is made with viper on initConfig
 var (
     GitRepository = "repository" // "GITHUB_REPOSITORY"
     GitToken = "token" // "GITHUB_TOKEN"
@@ -59,6 +61,7 @@ var (
 
 func init() {
 	// Global flags
+    //
 	cobra.OnInitialize(initLogger)
 	rootCmd.PersistentFlags().StringP("config", "c", "", "Course config file (default is course.toml in current directory")
 	rootCmd.PersistentFlags().StringP(GitRepository, "r", "", "Override GITHUB_REPOSITORY environment variable (target student)")
@@ -82,6 +85,7 @@ func (e *ZapLogLevel) Type() string {
 
 func initLogger() {
 	// Init logger configuration for Zap
+    // Currently only debug and production mode is supported with parameter logLevel
 	var cfg zap.Config
 	atom := zap.NewAtomicLevel()
 	atom.SetLevel(zapcore.LevelOf(logLevel))
@@ -126,19 +130,22 @@ func initConfig(cmd *cobra.Command) error {
 		return err
 	}
 	cmd.Root().Flags().Lookup("")
-	cmd.Flags().VisitAll(func(f *pflag.Flag) {
-		// Determine the naming convention of the flags when represented in the config file
-		configKey := f.Name
-		// If using camelCase in the config file, replace hyphens with a camelCased string.
-		// Since viper does case-insensitive comparisons, we don't need to bother fixing the case, and only need to remove the hyphens.
-		if replaceHyphenWithCamelCase {
-			configKey = strings.ReplaceAll(f.Name, "-", "")
-		}
-		//fmt.Println(v.Get("title"))
-		// Apply the viper config value to the flag when the flag is not set and viper has a value
-		if !f.Changed && v.IsSet(configKey) {
-			val := v.Get(configKey)
-			cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+    cmd.Flags().VisitAll(func(f *pflag.Flag) {
+        // Determine the naming convention of the flags when represented in the config file
+        configKey := f.Name
+        // If using camelCase in the config file, replace hyphens with a camelCased string.
+        // Since viper does case-insensitive comparisons, we don't need to bother fixing the case, and only need to remove the hyphens.
+        if replaceHyphenWithCamelCase {
+            configKey = strings.ReplaceAll(f.Name, "-", "")
+        }
+        // Apply the viper config value to the flag when the flag is not set and viper has a value
+        if !f.Changed && v.IsSet(configKey) {
+            val := v.Get(configKey)
+            err := cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+            if err != nil {
+                Logger.Warn("Setting key in Viper failed.",
+                zap.String("error", err.Error()))
+            }
 		}
 	})
     return nil

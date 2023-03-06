@@ -28,8 +28,7 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("generate called")
-		fmt.Println(v.Get("title"))
+//		fmt.Println(v.Get("title"))
         GenerateForSingleTask(cmd, Logger)
 	},
 }
@@ -52,6 +51,7 @@ func ByteArrayToInt(b []byte) int64 {
 }
 
 func randStringRunes(n uint8, seed int64) string {
+    // INSECURE deterministic RNG. The result can be reproduced with SEED
 	rand.Seed(seed)
 	var letterRunes = []rune("abcdef0123456789")
 	b := make([]rune, n)
@@ -62,7 +62,7 @@ func randStringRunes(n uint8, seed int64) string {
 }
 
 func GenerateFlag(key string, studentID string) string {
-	// Generate flag based on the task key and studentID
+	// Generate flag based on the task key and unique identifier
 	// Use key to calculate HMAC
 	// If key size is not 64 bytes, SHA256 and padding used if less, just SHA256 if more
 	// HMAC used as flag
@@ -78,7 +78,7 @@ func GenerateFlag(key string, studentID string) string {
 }
 func GenerateFlagSeed(taskSeed string, studentID string, length uint8) string {
 	// Generate deterministic flag based on the task seed and studentID
-	// Instead of HMAC, we need
+	// TODO Does not work well on very big seed at the moment
 
 	seedInt := new(big.Int)
 	seedInt.SetString(taskSeed, 16)
