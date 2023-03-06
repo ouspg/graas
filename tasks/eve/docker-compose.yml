@@ -9,7 +9,7 @@ services:
   bob:
     # image: ${image_name:?err}:latest
     # For local debugging only
-    build: 
+    build:
       context: ./
       dockerfile: ./bob/Dockerfile
     hostname: bob

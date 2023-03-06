@@ -1,8 +1,8 @@
+package cmd
+
 /*
 Copyright © 2023 OUSPG ouspg@ouspg.org
-
 */
-package cmd
 
 import (
 	"fmt"

@@ -16,26 +16,27 @@ title = "Configuration file for exercises in the course Introduction to Cybersec
 
 
 # Absolute path for the root location for the tasks (required for building the tasks)
-# tasksDir = "/home/nicce/teaching/gradeassistant/tasks"
+# TODO should be set relatively and option also with command line param
+tasksDir = "/Users/nicce/teaching/graas/tasks"
 
 # Task 1
 # head -c 32 /dev/random | xxd -ps
 [[tasks.week1]]
-    number = 1
-    key = "6b2c0c4535ea5b7c7f4fc603a738840fce80e0c8e2632f139f1aa9d27f540f15"
-    flagType = "FlagAsRNGSeed"
+number = 1
+key = "6b2c0c4535ea5b7c7f4fc603a738840fce80e0c8e2632f139f1aa9d27f540f15"
+flagType = "FlagAsRNGSeed"
 
 [[tasks.week1]]
-    number = 2
-    key = "8ff4e58e52a7ab3c75c572d50f5edbd1c3b83994a31c1954e48ccd405f1a5396"
-    flagType = "FlagAsBinary"
+number = 2
+key = "8ff4e58e52a7ab3c75c572d50f5edbd1c3b83994a31c1954e48ccd405f1a5396"
+flagType = "FlagAsBinary"
 
 [[tasks.week1]]
-    number = 3
-    key = "ccd41fdf6a4f4f7151a88c71ae391cf9d8e63b4e756c90c399e47f2898cfdd52"
-    flagType = "FlagAsEnvVariable"
+number = 3
+key = "ccd41fdf6a4f4f7151a88c71ae391cf9d8e63b4e756c90c399e47f2898cfdd52"
+flagType = "FlagAsEnvVariable"
 
 [[tasks.week2]]
-    number = 1
-    key = "6d7b59fa12ede1e9b421a8054c4de57ddbcc2add53751ab27aa3d471e0816286"
-    flagType = "FlagAsEnvVariable"
+number = 1
+key = "6d7b59fa12ede1e9b421a8054c4de57ddbcc2add53751ab27aa3d471e0816286"
+flagType = "FlagAsEnvVariable"

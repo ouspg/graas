@@ -7,10 +7,10 @@ Shadow compatible hash with included salt and option `$6` (SHA-512 hashing):
 ```console
 python3 -c 'import crypt; print(crypt.crypt("password", crypt.mksalt(crypt.METHOD_SHA512)))'
 ```
+
 Produces for example:
 
 > `$6$WSE04aebjazYHra.$F1Ei6ujDlBUCRvBGFGeUn3iuzYihzr6J57i5gvn5ZPJeJu91vKOlhcLGEOPhuo2JtMaAfmYqwuhJb8sKRKiz7.`
-
 
 ## Useful
 

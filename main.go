@@ -1,8 +1,8 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package main
+
+/*
+Copyright © 2023 OUSPG ouspg@ouspg.org
+*/
 
 import "github.com/ouspg/graas/cmd"
 

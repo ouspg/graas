@@ -4,7 +4,6 @@ package cmd
 Copyright © 2023 OUSPG ouspg@ouspg.org
 */
 
-
 import (
 	"fmt"
 	"github.com/spf13/cobra"
@@ -15,6 +14,7 @@ import (
 	"os"
 	"strings"
 )
+
 // Note that variables are defined package wide!
 
 var defaultConfig = "course"
@@ -52,16 +52,16 @@ func Execute() {
 // Prefix is automatically removed from ENV variable (see var  envPrefix), suffix lowercased, and result compared to command argument names
 // as result, following command names will match ENV variables, comparison is made with viper on initConfig
 var (
-    GitRepository = "repository" // "GITHUB_REPOSITORY"
-    GitToken = "token" // "GITHUB_TOKEN"
-    GitRef = "ref" // "GITHUB_REF"
-    GitRefType = "ref-type" // "GITHUB_REF_TYPE"
+	GitRepository = "repository" // "GITHUB_REPOSITORY"
+	GitToken      = "token"      // "GITHUB_TOKEN"
+	GitRef        = "ref"        // "GITHUB_REF"
+	GitRefType    = "ref-type"   // "GITHUB_REF_TYPE"
 
 )
 
 func init() {
 	// Global flags
-    //
+	//
 	cobra.OnInitialize(initLogger)
 	rootCmd.PersistentFlags().StringP("config", "c", "", "Course config file (default is course.toml in current directory")
 	rootCmd.PersistentFlags().StringP(GitRepository, "r", "", "Override GITHUB_REPOSITORY environment variable (target student)")
@@ -71,6 +71,12 @@ func init() {
 	rootCmd.PersistentFlags().String(GitRef, "", "Override GITHUB_REF environment variable. The fully-formed ref of the branch or tag that triggered the GitHub Actions workflow run.")
 	rootCmd.PersistentFlags().VarP(&logLevel, "log", "l", "Set a log level. Available levels: debug, info, warn, error, dpanic, panic, fatal")
 	rootCmd.PersistentFlags().BoolVarP(&enableJSON, "json", "j", false, "Enable JSON output")
+
+	// Task definition
+	rootCmd.PersistentFlags().Int8P("week", "w", 0, "Specify week number for generation or evaluation purposes")
+	rootCmd.PersistentFlags().Int8P("task", "t", 0, "Specify task number for generation or evaluation purposes")
+	//    rootCmd.MarkFlagsRequiredTogether("task", "week")
+
 	// Local flags
 }
 
@@ -85,7 +91,7 @@ func (e *ZapLogLevel) Type() string {
 
 func initLogger() {
 	// Init logger configuration for Zap
-    // Currently only debug and production mode is supported with parameter logLevel
+	// Currently only debug and production mode is supported with parameter logLevel
 	var cfg zap.Config
 	atom := zap.NewAtomicLevel()
 	atom.SetLevel(zapcore.LevelOf(logLevel))
@@ -130,23 +136,23 @@ func initConfig(cmd *cobra.Command) error {
 		return err
 	}
 	cmd.Root().Flags().Lookup("")
-    cmd.Flags().VisitAll(func(f *pflag.Flag) {
-        // Determine the naming convention of the flags when represented in the config file
-        configKey := f.Name
-        // If using camelCase in the config file, replace hyphens with a camelCased string.
-        // Since viper does case-insensitive comparisons, we don't need to bother fixing the case, and only need to remove the hyphens.
-        if replaceHyphenWithCamelCase {
-            configKey = strings.ReplaceAll(f.Name, "-", "")
-        }
-        // Apply the viper config value to the flag when the flag is not set and viper has a value
-        if !f.Changed && v.IsSet(configKey) {
-            val := v.Get(configKey)
-            err := cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
-            if err != nil {
-                Logger.Warn("Setting key in Viper failed.",
-                zap.String("error", err.Error()))
-            }
+	cmd.Flags().VisitAll(func(f *pflag.Flag) {
+		// Determine the naming convention of the flags when represented in the config file
+		configKey := f.Name
+		// If using camelCase in the config file, replace hyphens with a camelCased string.
+		// Since viper does case-insensitive comparisons, we don't need to bother fixing the case, and only need to remove the hyphens.
+		if replaceHyphenWithCamelCase {
+			configKey = strings.ReplaceAll(f.Name, "-", "")
+		}
+		// Apply the viper config value to the flag when the flag is not set and viper has a value
+		if !f.Changed && v.IsSet(configKey) {
+			val := v.Get(configKey)
+			err := cmd.Flags().Set(f.Name, fmt.Sprintf("%v", val))
+			if err != nil {
+				Logger.Warn("Setting key in Viper failed.",
+					zap.String("error", err.Error()))
+			}
 		}
 	})
-    return nil
+	return nil
 }

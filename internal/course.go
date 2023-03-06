@@ -3,7 +3,8 @@ package internal
 import (
 	"encoding/hex"
 	"fmt"
-    "github.com/spf13/viper"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"path/filepath"
 )
@@ -22,13 +23,12 @@ type (
 
 func readCourseConfig(viperData *viper.Viper, logger *zap.Logger) *Course {
 
-    config := &Course{}
-    err := viperData.Unmarshal(config)
-    if err != nil {
-        logger.Fatal("unable to decode into config struct",
-            zap.String("error", err.Error()))
-    }
-
+	config := &Course{}
+	err := viperData.Unmarshal(config)
+	if err != nil {
+		logger.Fatal("unable to decode into config struct",
+			zap.String("error", err.Error()))
+	}
 
 	if config.TasksDir == "" {
 		logger.Fatal("Task directory path must be provided.")
@@ -103,7 +103,22 @@ func getCourseInfo(v *viper.Viper, logger *zap.Logger) *Course {
 	return config
 }
 
-func CreateCourseTasks(v *viper.Viper, logger *zap.Logger) {
+func CreateCourseTasks(cmd *cobra.Command, v *viper.Viper, logger *zap.Logger) {
 	config := getCourseInfo(v, logger)
 	fmt.Println(config.Title)
+}
+func CreateSingleTask(v *viper.Viper, student string, weekNro int8, taskNro int8, logger *zap.Logger) {
+	// Create full task, include build phase. Currently just creates a flag without any specific format
+	// TODO add support for Flag types
+
+	config := getCourseInfo(v, logger)
+	fmt.Println(config.Title)
+	taskKey := config.Tasks[fmt.Sprintf("week%d", weekNro)][taskNro-1].Key
+	flag := GenerateSecureFlag(taskKey, student, logger)
+	// TODO remove printing anything related to flag or key or disallow DEBUG mode on CI by configuring GitHub runner
+	// Otherwise might leak information
+	logger.Debug("Flag generated",
+		zap.String("flag", flag),
+	)
+
 }
