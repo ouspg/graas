@@ -89,6 +89,7 @@ There should be uniform way to tell, how every task will be build.
 
 From the security perspective, GitHub Actions runner should be only able to run this specific binary, but then this
 specific binary can give build commands.
+Debug mode should be prevented on runner, just in case to not leak too much information.
 
 ## Code quality
 
